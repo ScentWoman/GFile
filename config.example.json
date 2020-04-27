@@ -1,0 +1,38 @@
+{
+    "globalConfig": {
+        "announcement": "",
+        "siteName": "",
+        "username": "",
+        "domain": "",
+        "layout": "full",
+        "tableSize": "small",
+        "searchEnable": false,
+        "showAnnouncement": true,
+        "showDocument": true,
+        "showOperator": true,
+        "customCss": "",
+        "customJs": ""
+    },
+    "drive": [
+        {
+            "info": {
+                "name": "",
+                "enableCache": true,
+                "autoRefreshCache": false,
+                "searchContainEncryptedFile": false,
+                "searchEnable": false,
+                "searchIgnoreCase": false,
+                "type": {
+                    "key": "Drive",
+                    "description": "Google Drive"
+                }
+            },
+            "credentialsFile": "/path/to/credentials.json",
+            "tokenFile": "/path/to/token.json",
+            "directPrefix": {
+                "major": "",
+                "minor": ""
+            }
+        }
+    ]
+}

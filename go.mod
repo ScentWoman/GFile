@@ -1,0 +1,9 @@
+module github.com/ScentWoman/GFile
+
+go 1.14
+
+require (
+	github.com/json-iterator/go v1.1.9
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	google.golang.org/api v0.22.0
+)
