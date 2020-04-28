@@ -1,4 +1,7 @@
 {
+    "pageSize": 20,
+    "cacheSize": 1000,
+    "expire": 300,
     "globalConfig": {
         "announcement": "",
         "siteName": "",

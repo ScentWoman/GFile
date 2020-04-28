@@ -1,6 +1,7 @@
 package gfile
 
 import (
+	"log"
 	"sync"
 	"time"
 
@@ -48,6 +49,10 @@ func (c *cache) autoDelete() {
 }
 
 func (c *cache) get(path, password string) (list []zfile.File, ok bool) {
+	if path == "" {
+		path = "/"
+	}
+	// log.Println("cache get:", path, password)
 	ok = true
 	list = nil
 
@@ -57,6 +62,7 @@ func (c *cache) get(path, password string) (list []zfile.File, ok bool) {
 	case nil:
 	default:
 		if time.Since(rec.timestamp) > c.expire {
+			log.Println("cache expired:", path)
 			c.mux.RUnlock()
 			c.mux.Lock()
 			c.count--
@@ -66,8 +72,10 @@ func (c *cache) get(path, password string) (list []zfile.File, ok bool) {
 		}
 
 		if password == rec.password {
+			// log.Println("cache: hit")
 			list = rec.list
 		} else {
+			log.Println("cache: wrong password")
 			ok = false
 		}
 	}
@@ -76,15 +84,52 @@ func (c *cache) get(path, password string) (list []zfile.File, ok bool) {
 	return
 }
 
-func (c *cache) set(path, password string, list []zfile.File) {
-	c.mux.Lock()
-	if c.count != c.size {
-		c.count++
-		c.mem[path] = &record{
-			timestamp: time.Now(),
-			password:  password,
-			list:      list,
+func (c *cache) getWithoutPass(path string) (list []zfile.File, ok bool) {
+	if path == "" {
+		path = "/"
+	}
+	// log.Println("cache get:", path, password)
+	ok = true
+	list = nil
+
+	c.mux.RLock()
+	rec := c.mem[path]
+	switch rec {
+	case nil:
+	default:
+		if time.Since(rec.timestamp) > c.expire {
+			log.Println("cache expired:", path)
+			c.mux.RUnlock()
+			c.mux.Lock()
+			c.count--
+			delete(c.mem, path)
+			c.mux.Unlock()
+			return
 		}
+
+		list = rec.list
+	}
+
+	c.mux.RUnlock()
+	return
+}
+
+func (c *cache) set(path, password string, list []zfile.File) {
+	// log.Println("cache: set", path, "->", list, "(pass="+password+")")
+	c.mux.Lock()
+	if c.count == c.size {
+		for k := range c.mem {
+			delete(c.mem, k)
+			break
+		}
+	} else {
+		c.count++
+	}
+
+	c.mem[path] = &record{
+		timestamp: time.Now(),
+		password:  password,
+		list:      list,
 	}
 	c.mux.Unlock()
 }
