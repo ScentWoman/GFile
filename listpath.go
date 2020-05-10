@@ -151,9 +151,12 @@ func toType(s string) string {
 }
 
 func toTime(s string) string {
-	t, e := time.ParseInLocation(driveTFormat, s, Location)
+	t, e := time.Parse(driveTFormat, s)
 	if e != nil {
 		return s
+	}
+	if Location != nil {
+		t = t.In(Location)
 	}
 	return t.Format(rTFormat)
 }
