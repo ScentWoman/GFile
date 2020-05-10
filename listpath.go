@@ -5,10 +5,25 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/ScentWoman/GFile/zfile"
 	"google.golang.org/api/drive/v3"
 )
+
+var (
+	// Location of time zone.
+	Location *time.Location
+
+	driveTFormat = "2006-01-02T15:04:05.000Z"
+	rTFormat     = "2006-01-02 15:04:05"
+)
+
+func init() {
+	if Location == nil {
+		Location, _ = time.LoadLocation("Local")
+	}
+}
 
 func (c *Config) listPath(n int, path, password string) (list []zfile.File, ok bool) {
 	if n >= len(c.backend) {
@@ -67,7 +82,7 @@ func listPath(srv *drive.Service, rcache *cache, path, password string) (err err
 					Name: v.Name,
 					Path: npath,
 					Size: v.Size,
-					Time: v.ModifiedTime,
+					Time: toTime(v.ModifiedTime),
 					Type: toType(v.MimeType),
 					URL:  &v.Id,
 				})
@@ -106,7 +121,7 @@ func listPath(srv *drive.Service, rcache *cache, path, password string) (err err
 			Name: v.Name,
 			Path: npath,
 			Size: v.Size,
-			Time: v.ModifiedTime,
+			Time: toTime(v.ModifiedTime),
 			Type: toType(v.MimeType),
 			URL:  &v.Id,
 		})
@@ -133,4 +148,12 @@ func toType(s string) string {
 		return "FOLDER"
 	}
 	return "FILE"
+}
+
+func toTime(s string) string {
+	t, e := time.ParseInLocation(driveTFormat, s, Location)
+	if e != nil {
+		return s
+	}
+	return t.Format(rTFormat)
 }
