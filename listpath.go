@@ -78,14 +78,9 @@ func listPath(srv *drive.Service, rcache *cache, path, password string) (err err
 			var nlist []zfile.File
 			var npass string
 			for _, v := range glist.Files {
-				nlist = append(nlist, zfile.File{
-					Name: v.Name,
-					Path: npath,
-					Size: v.Size,
-					Time: toTime(v.ModifiedTime),
-					Type: toType(v.MimeType),
-					URL:  &v.Id,
-				})
+				if v.Trashed {
+					continue
+				}
 				if strings.ToLower(v.Name) == "password.txt" {
 					resp, err := srv.Files.Get(v.Id).Download()
 					if err != nil {
@@ -97,6 +92,15 @@ func listPath(srv *drive.Service, rcache *cache, path, password string) (err err
 						return err
 					}
 					npass = string(body)
+				} else {
+					nlist = append(nlist, zfile.File{
+						Name: v.Name,
+						Path: npath,
+						Size: v.Size,
+						Time: toTime(v.ModifiedTime),
+						Type: toType(v.MimeType),
+						URL:  &v.Id,
+					})
 				}
 				if v.Name == spath[k] {
 					parent = v.Id
@@ -117,14 +121,9 @@ func listPath(srv *drive.Service, rcache *cache, path, password string) (err err
 	var nlist []zfile.File
 	var npass string
 	for _, v := range glist.Files {
-		nlist = append(nlist, zfile.File{
-			Name: v.Name,
-			Path: npath,
-			Size: v.Size,
-			Time: toTime(v.ModifiedTime),
-			Type: toType(v.MimeType),
-			URL:  &v.Id,
-		})
+		if v.Trashed {
+			continue
+		}
 		if strings.ToLower(v.Name) == "password.txt" {
 			resp, err := srv.Files.Get(v.Id).Download()
 			if err != nil {
@@ -136,6 +135,15 @@ func listPath(srv *drive.Service, rcache *cache, path, password string) (err err
 				return err
 			}
 			npass = string(body)
+		} else {
+			nlist = append(nlist, zfile.File{
+				Name: v.Name,
+				Path: npath,
+				Size: v.Size,
+				Time: toTime(v.ModifiedTime),
+				Type: toType(v.MimeType),
+				URL:  &v.Id,
+			})
 		}
 	}
 	rcache.set(path, npass, nlist)
